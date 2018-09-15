@@ -1,3 +1,3 @@
-# lang-n-play
+# LANG-N-PLAY
 
 Coming soon!
