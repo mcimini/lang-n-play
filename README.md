@@ -1,3 +1,3 @@
 # LANG-N-PLAY
 
-Coming soon!
+To be uploaded soon!
