@@ -6,7 +6,7 @@ Requirements
 - OCaml batteries
 - ELPI/Lambda-prolog
 
-Quick usage (from shell): 
-$ make 
+Quick usage (from shell):    
+$ make     
 $ ./lofl <example.lop>
 
