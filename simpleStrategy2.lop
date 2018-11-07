@@ -1,0 +1,14 @@
+let lambda v : strategy = {! Types T ::= (int) | (arrow T T),  
+			   Expression e ::= zero | (abs @x e) | (app e e), 
+               Value v ::= zero | (abs @x e), 
+               Context C ::= (app C e) | (app v C),
+			   Environment Gamma ::= [x : T],
+			   Relation ::= Gamma |- e : T | e --> e,
+			   StartingCall ::= empty |- e : T | e --> e.
+			   (app (abs @x e) v) --> e[v/x], 
+			   Gamma |- x : T <== x : T in Gamma, 
+			   Gamma |- (abs @x e) : (arrow T1 T2) <== [x : T1 | Gamma] |- e : T2,
+			   Gamma |- (app e1 e2) : T2 <== Gamma |- e1 : (arrow T1 T2) /\ Gamma |- e2 : T1,
+			   Gamma |- zero : int 
+			 !} in (lambda vv)> zero
+			 			 

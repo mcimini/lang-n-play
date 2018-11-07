@@ -1,0 +1,30 @@
+let lambda v : strategy = {! Types T ::= (string) | (arrow T T),  
+			   Expression e ::= (abs @x e) | (app e e), 
+               Value v ::= (abs @x e) | emptyList, 
+			   Relation ::= Gamma |- e : T | e --> e,
+			   StartingCall ::= empty |- e : T | e --> e.
+			   (app (abs @x e) v) --> e[v/x], 
+			   Gamma |- X : T <== X : T in Gamma, 
+			   Gamma |- (abs @x e) : (arrow T1 T2) <== [x : T1 | Gamma] |- e : T2,
+			   Gamma |- (app e1 e2) : T2 <== Gamma |- e1 : (arrow T1 T2) /\ Gamma |- e2 : T1
+			 !} 
+
+let lambdaStore v : strategy = {! Types T ::= (string) | (arrow T T),  
+			   Expression e ::= (abs @x e) | (app e e), 
+               Value v ::= (abs @x e) | emptyList, 
+               Heap h ::= [(mapStore l e)], 
+               Configuration c ::= (e l h),
+			   Environment gamma ::= [x : T],
+			   Location sigma ::= [(map l T)],
+			   Relation ::= sigma gamma |- c : T | sigma gamma |- e : T | (typeHeap sigma gamma h) | (e l h) --> (e l h),
+			   StartingCall ::= sigma empty |- c : T.
+			   (app (abs @x e) v) Count Store --> e[v/x] Count Store, 
+			   Sigma Gamma |- X : T <== X : T in Gamma, 
+			   Sigma Gamma |- (abs @x e) : (arrow T1 T2) <== Sigma [x : T1 | Gamma] |- e : T2,
+			   Sigma Gamma |- (app e1 e2) : T2 <== Sigma Gamma |- e1 : (arrow T1 T2) /\ Sigma Gamma |- e2 : T1
+			 !} 
+
+let cbn =  {! Context C ::= (app C e), Configuration conf ::= (e l h) !}  
+let cbv =  cbn U {! Context C ::= (app v C), Configuration conf ::= (e l h) !}  
+let rightToLeft =  {! Context C ::= (app e C) | (app C v), Configuration conf ::= (e l h) !} 
+

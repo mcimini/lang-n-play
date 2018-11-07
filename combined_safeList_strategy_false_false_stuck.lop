@@ -1,0 +1,52 @@
+import if_lib
+import length_lib
+import greater_lib
+
+let lists = {! 
+               Type T ::= int | (list T), 
+               Expression e ::= (zero) | (succ e) | (emptylist) | (consList e e) | (elementAt e e), 
+               Value v ::= (zero) | (succ v) | (emptyList) | (consList v v),
+               Context C ::= (succ C) | (consList C e) | (consList v C) | (elementAt C e) | (elementAt v C), 
+               Environment Gamma ::= [x : T],
+               Relation ::= Gamma |- e : T | e --> e,
+               StartingCall ::= empty |- e : T | e --> e.
+               Gamma |- x : T <== x : T in Gamma, 
+               Gamma |- zero : int, 
+               Gamma |- (succ e) : int <== Gamma |- e : int,
+               Gamma |- emptyList : (list T),
+               Gamma |- (consList e1 e2) : (list T) <== Gamma |- e1 : T /\ Gamma |- e2 : (list T),
+               Gamma |- (elementAt e1 e2) : T <== Gamma |- e1 : (int) /\ Gamma |- e2 : (list T),
+               (elementAt (zero) (consList V1 V2)) --> V1, 
+               (elementAt (succ V) (consList V1 V2)) --> (elementAt V V2)
+            !} 
+
+let addBoundChecks 'lan mylan : 'lan U {! Types T ::= (int) | (list T), Expression e ::= (elementAt e e) | (iif) | (length) | (greater) !}
+                                    - {! Expression e ::= myError !} = 
+               remove ((elementAt (succ V) (consList V1 V2)) --> (elementAt V V2)) from mylan 
+               U {! 
+                    Expression e ::= myError, 
+                    Error er ::= myError 							
+                    (elementAt (succ V) (consList V1 V2)) --> (iif (greater (succ V) (length (consList V1 V2))) myError (elementAt V V2)),
+                    (elementAt E emptyList) --> myError 
+                 !} 
+
+let lambda v : strategy = {! Types T ::= (arrow T T),  
+                             Expression e ::= (abs @x e) | (app e e), 
+                             Value v ::= (abs @x e), 
+                             Context C ::= (app C e),
+                             Environment Gamma ::= [x : T],
+                             Relation ::= Gamma |- e : T | e --> e,
+                             StartingCall ::= empty |- e : T | e --> e.
+                             (app (abs @x e) v) --> e[v/x], 
+                             Gamma |- x : T <== x : T in Gamma, 
+                             Gamma |- (abs @x e) : (arrow T1 T2) <== [x : T1 | Gamma] |- e : T2,
+                             Gamma |- (app e1 e2) : T2 <== Gamma |- e1 : (arrow T1 T2) /\ Gamma |- e2 : T1
+                          !} 
+
+let getRightLanguage safety : bool mayDiverge : bool = 
+    if safety then if mayDiverge then (addBoundChecks (((((lambda ee) U lists) U if_lib) U greater_lib) U length_lib))
+	                             else (addBoundChecks ((((((lambda vv) U {! Context C ::= (app v C) !}) U lists) U if_lib) U greater_lib) U length_lib) ) 
+              else if mayDiverge then (lambda ee) U lists
+                                 else ((lambda vv) U {! Context C ::= (app v C) !}) U lists
+in ((getRightLanguage false) false)> (elementAt (succ (succ (succ (succ (succ zero))))) (consList zero emptyList))
+

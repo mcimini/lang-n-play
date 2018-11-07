@@ -1,0 +1,30 @@
+let lists = {! Types T ::= baseType | (list T), 
+			   Expression e ::= (emptylist) | (consList e e) | (head e) | (tail e), 
+               Value v ::= (emptyList) | (consList v v), 
+               Context C ::= (consList C e) | (consList v C) | (head C) | (tail C), 
+			   Environment Gamma ::= [x : T],
+			   Relation ::= Gamma |- e : T | e --> e,
+			   StartingCall ::= empty |- e : T | e --> e.
+			   (head (consList V1 V2)) --> V1,
+			   Gamma |- x : T <== x : T in Gamma, 
+			   Gamma |- emptyList : (list (baseType)),
+			   Gamma |- (consList e1 e2) : (list T) <== Gamma |- e1 : T /\ Gamma |- e2 : (list T),
+			   Gamma |- (head e) : T <== Gamma |- e : (list T),
+			   Gamma |- (tail e) : (list T) <== Gamma |- e : (list T)
+			 !} 
+
+let pairs = {! Type T ::= (int) | (times T T),  
+			   Expression e ::= zero | (pair e e), 
+               Value v ::= (pair v v), 
+               Context C ::= (pair C e) | (pair v C) | (fst C) | (snd C), 
+			   Environment Gamma ::= [x : T],
+			   Relation ::= Gamma |- e : T | e --> e,
+			   StartingCall ::= empty |- e : T | e --> e.
+			   Gamma |- x : T <== x : T in Gamma, 
+			   Gamma |- zero : int,
+			   Gamma |- (pair e1 e2) : (times T1 T2) <== Gamma |- e1 : T1 /\ Gamma |- e2 : T2,
+			   Gamma |- (fst e) : T1 <== Gamma |- e : (times T1 T2),
+			   Gamma |- (snd e) : T2 <== Gamma |- e : (times T1 T2),
+			   (fst (pair v1 v2)) --> v1,
+			   (snd (pair v1 v2)) --> v2
+			 !} in (hd [lists ; lists])

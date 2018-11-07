@@ -1,0 +1,10 @@
+let if_lib = {! 
+			   Expression e ::= (iif e e e), 
+               Context C ::= (iif C e e), 
+               Environment Gamma ::= [x : T],
+               Relation ::= Gamma |- e : T | e --> e,
+               StartingCall ::= empty |- e : T | e --> e.
+               Gamma |- (iif e1 e2 e3) : T <== Gamma |- e1 : (int) /\ Gamma |- e2 : T /\ Gamma |- e3 : T,
+               (iif (succ E) E1 E2) --> E1, 
+               (iif (zero) E1 E2) --> E2 
+            !} 

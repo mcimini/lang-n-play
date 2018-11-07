@@ -1,0 +1,151 @@
+module loml.
+
+type appendLO (list prop) -> (list prop) -> (list prop) -> prop. 
+type mem prop -> list prop -> prop. 
+type infoLO term -> typ -> prop.  
+type removeLO prop -> (list prop) -> (list prop) -> prop. 
+
+appendLO [] L L.
+appendLO [H | T] L [H | Rest] :- appendLO T L Rest. 
+
+removeLO X [] [] :- !.
+removeLO X [ X | Xs ] Y :- !, removeLO X Xs Y.
+removeLO X [ T | Xs ] Y :- !, removeLO X Xs Y2, appendLO [T] Y2 Y.
+
+mem X [ X | _ ] :- !.
+mem X [ _ | YS] :- mem X YS.
+
+list_contains [] L.
+list_contains [ H | T ] L :-  mem H L, list_contains T L.
+
+list_equality L1 L2 :- list_contains L1 L2, list_contains L2 L1. 
+
+equality tstrategyLO tstrategyLO.
+equality (tlanguage Rules1) (tlanguage Rules2) :- list_equality Rules1 Rules2.
+
+kind expLO type.
+kind typeLO type.
+kind configuration type.
+
+pred typeOfLO i:(list prop), i:expLO, o:typeLO.
+
+type absLO (expLO -> expLO ) -> expLO. 
+type appLO expLO -> expLO -> expLO. 
+type letLO expLO -> (expLO -> expLO ) -> expLO. 
+type language list prop -> expLO. 
+type exec expLO -> configuration -> expLO. 
+type unionLO expLO -> expLO -> expLO.
+type deleteLO list prop -> expLO -> expLO.
+type strategy (configuration -> prop) -> expLO. 
+
+% lists, if, letrec
+type letrecLO (expLO -> expLO ) -> (expLO -> expLO ) -> expLO.
+type fixLO expLO -> expLO.
+type falseLO expLO.
+type trueLO expLO.
+type ifLO expLO -> expLO -> expLO -> expLO.
+type nilLO expLO.
+type consLO expLO -> expLO -> expLO.
+type headLO expLO -> expLO.
+type tailLO expLO -> expLO.
+
+type valueLO expLO -> prop.
+type errorLO expLO -> prop.
+type stepLO expLO -> expLO -> prop.
+type nstepLO expLO -> expLO -> prop.
+
+% This below are required in the languages 
+
+type value configuration -> prop.
+type error configuration -> prop.
+%type typeOf configuration -> typ -> prop.
+type step configuration -> configuration -> prop.
+type lo expLO -> configuration.
+type conf configuration -> configuration.
+
+type check-strategy expLO -> configuration -> prop. 
+check-strategy (strategy F) V :- (F V). 
+
+stepLO (appLO (absLO R) V) (R V) :- valueLO V. 
+
+stepLO (letLO V R) (R V) :- valueLO V.
+
+stepLO (unionLO (language Rules1) (language Rules2)) (language Result) :- appendLO Rules1 Rules2 Result.
+
+stepLO (deleteLO [Formula] (language Rules)) (language Result) :- removeLO Formula Rules Result.
+
+stepLO (letrecLO R1 R2) (letLO (fixLO (absLO R1)) R2).
+
+stepLO (fixLO V) (appLO V (fixLO V)) :- valueLO V.
+
+stepLO (ifLO (trueLO ) E1 E2) E1.
+
+stepLO (ifLO (falseLO ) E1 E2) E2.
+
+stepLO (headLO (consLO V1 V2)) V1 :- valueLO V1, valueLO V2.
+
+stepLO (tailLO (consLO V1 V2)) V2 :- valueLO V1, valueLO V2.
+
+valueLO (absLO R2).
+
+valueLO (language Rules).
+
+valueLO (strategy Formula).
+
+valueLO nilLO.
+
+valueLO (consLO V1 V2) :- valueLO V1, valueLO V2.
+
+valueLO trueLO.
+
+valueLO falseLO.
+
+valueLO (exec (language Language) Conf) :- (Language => (value Conf)).
+errorLO (exec (language Language) Conf) :- (Language => (error Conf)).
+valueLO (exec (language Language) (conf Conf)) :- (Language => (value Conf)).
+errorLO (exec (language Language) (conf Conf)) :- (Language => (error Conf)).
+
+stepLO (exec (language Language) Conf) (exec (language Language) Conf') :- (Language => (step Conf Conf')).
+
+stepLO (appLO E1 E2) (appLO E1' E2) :- stepLO E1 E1'.
+
+stepLO (appLO E1 E2) (appLO E1 E2') :- stepLO E2 E2', valueLO E1.
+
+stepLO (letLO E1 R2) (letLO E1' R2) :- stepLO E1 E1'.
+
+stepLO (unionLO E1 E2) (unionLO E1' E2) :- stepLO E1 E1'.
+
+stepLO (unionLO E1 E2) (unionLO E1 E2') :- stepLO E2 E2', valueLO E1.
+
+stepLO (deleteLO Formula E1) (deleteLO Formula E1') :- stepLO E1 E1'.
+
+stepLO (exec E1 Conf) (exec E1' Conf) :- stepLO E1 E1'.
+
+stepLO (fixLO E1) (fixLO E1') :- stepLO E1 E1'.
+
+stepLO (consLO E1 E2) (consLO E1' E2) :- stepLO E1 E1'.
+
+stepLO (consLO E1 E2) (consLO E1 E2') :- stepLO E2 E2', valueLO E1.
+
+stepLO (headLO E1) (headLO E1') :- stepLO E1 E1'.
+
+stepLO (tailLO E1) (tailLO E1') :- stepLO E1 E1'.
+
+stepLO (ifLO E1 E2 E3) (ifLO E1' E2 E3) :- stepLO E1 E1'.
+
+
+nstepLO Exp Exp. 
+nstepLO Exp1 Exp3 :- stepLO Exp1 Exp2, nstepLO Exp2 Exp3.   
+
+stuck Exp1 Exp2 :- nstepLO Exp1 Exp2, not(stepLO Exp2 Exp3), not(valueLO Exp2), not(errorLO Exp2).
+
+typeOfLO GammaLO (language Rules) (tlanguage Rules). 
+
+typeOfLO GammaLO (unionLO E1 E2) T :- typeOfLO GammaLO E1 (tlanguage Rules1), typeOfLO GammaLO E2 (tlanguage Rules2), appendLO Rules1 Rules2 T.
+
+typeOfLO GammaLO (appLO E1 E2) T :- typeOfLO GammaLO E1 (arrowLO T1 T2), typeOfLO GammaLO E2 T3, equality T1 T2.
+
+pi x\ (typeOfLO GammaLO x T :- mem (infoLO x T) GammaLO).
+
+
+

@@ -1,0 +1,10 @@
+let length_lib = {! 
+               Expression e ::= (length e) , 
+               Context C ::= (length C), 
+               Environment Gamma ::= [x : T],
+               Relation ::= Gamma |- e : T | e --> e,
+               StartingCall ::= empty |- e : T | e --> e.
+               Gamma |- (length e) : int <== Gamma |- e : (list T),
+               (length (emptyList)) --> zero,
+               (length (consList V1 V2)) --> (succ (length V2))
+            !} 

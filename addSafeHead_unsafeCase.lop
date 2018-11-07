@@ -1,0 +1,23 @@
+let lists = {! Types T ::= int | (list T), 
+			   Expression e ::= zero | (emptylist) | (consList e e) | (head e) | (tail e), 
+               Value v ::= zero | (emptyList) | (consList v v), 
+               Context C ::= (consList C e) | (cons v C) | (head C) | (tail C),
+			   Environment Gamma ::= [x : T],
+			   Relation ::= Gamma |- e : T | e --> e,
+			   StartingCall ::= empty |- e : T | e --> e.
+			   (head (consList V1 V2)) --> V1,
+			   Gamma |- x : T <== x : T in Gamma, 
+			   Gamma |- zero : int,
+			   Gamma |- emptyList : (list int),
+			   Gamma |- (consList e1 e2) : (list T) <== Gamma |- e1 : T /\ Gamma |- e2 : (list T),
+			   Gamma |- (head e) : T <== Gamma |- e : (list T),
+			   Gamma |- (tail e) : (list T) <== Gamma |- e : (list T)
+			 !} 
+
+let addSafeHead 'lan mylan : 'lan U {! Expression e ::= (head e) | (emptyList) !} = 
+							mylan U {!  
+								Expression e ::= myError,
+								Error er ::= myError  
+								(head emptyList) --> myError 
+							!} in (lists)> (head emptyList)
+

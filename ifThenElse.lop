@@ -1,0 +1,15 @@
+let lists = {! Types T ::= baseType | (list T), 
+			   Expression e ::= (emptylist) | (cons e e) | (head e) | (tail e), 
+               Value v ::= (emptyList) | (cons v v), 
+               Context C ::= (cons C e) | (cons v C) | (head C) | (tail C), 
+			   Environment Gamma ::= [x : T],
+			   Relation ::= Gamma |- e : T | e --> e,
+			   StartingCall ::= empty |- e : T | e --> e.
+			   (head (cons V1 V2)) --> V1,
+			   Gamma |- x : T <== x : T in Gamma, 
+			   Gamma |- emptyList : (list (baseType)),
+			   Gamma |- (cons e1 e2) : (list T) <== Gamma |- e1 : T /\ Gamma |- e2 : (list T),
+			   Gamma |- (head e) : T <== Gamma |- e : (list T),
+			   Gamma |- (tail e) : (list T) <== Gamma |- e : (list T)
+			 !} in if true then lists else lists
+

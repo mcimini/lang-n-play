@@ -1,0 +1,43 @@
+let pairs = {! Type T ::= (int) | (times T T),  
+			   Expression e ::= zero | (pair e e), 
+               Value v ::= zero | (pair v v), 
+               Context C ::= (pair C e) | (pair v C) | (fst C) | (snd C),
+			   Environment Gamma ::= [x : T],
+			   Relation ::= Gamma |- e : T | e --> e,
+			   StartingCall ::= empty |- e : T | e --> e.
+			   Gamma |- zero : int,
+			   Gamma |- (pair e1 e2) : (times T1 T2) <== Gamma |- e1 : T1 /\ Gamma |- e2 : T2,
+			   Gamma |- (fst e) : T1 <== Gamma |- e : (times T1 T2),
+			   Gamma |- (snd e) : T2 <== Gamma |- e : (times T1 T2),
+			   (fst (pair v1 v2)) --> v1,
+			   (snd (pair v1 v2)) --> v2
+			 !}  
+			 
+let addList 'lan mylan : 'lan U {! !} - {! Expression e ::= (emptylist) | (consList e e) | (head e) | (tail e) | myError !} = 
+				    mylan U {! Type T ::= (list T), 
+			           Expression e ::= (emptylist) | (consList e e) | (head e) | (tail e) | myError, 
+                       Value v ::= (emptyList) | (consList v v), 
+					   Error er ::= myError,  
+                       Context C ::= (consList C e) | (consList v C) | (head C) | (tail C)
+					   Gamma |- x : T <== x : T in Gamma, 
+					   Gamma |- emptyList : (list T),
+					   Gamma |- (consList e1 e2) : (list T) <== Gamma |- e1 : T /\ Gamma |- e2 : (list T),
+					   Gamma |- (head e) : T <== Gamma |- e : (list T),
+		               (head (consList V1 V2)) --> V1,
+					   (head emptyList) --> myError,
+		               (tail (consList V1 V2)) --> V2,
+					   (tail emptyList) --> myError 
+			        !} in 
+
+let addSubtypingListAndPair 'lan mylan : 'lan U {! Type T ::= (string) | (times T T) | (list T) !} - {! Expression e ::=  (list_to_pair e e) | (list_to_pair e e) subtyping !} = 
+							mylan U {!  
+								subtyping,
+								(times T T) <: (list T),
+								(list T) <: (times T T),
+								(fst List) --> (fst Pair) <== (list_to_pair List Pair),
+								(snd List) --> (snd Pair) <== (list_to_pair List Pair),
+								(head Pair) --> (head List) <== (pair_to_list Pair List), 
+								(list_to_pair emptyList myError), 
+								(list_to_pair (consList V1 V2) (pair V1 (head V2))), 
+								(pair_to_list (pair V1 V2) (consList V1 (consList V2 emptyList))) 
+							!} in (addList pairs)> (fst (consList zero (consList zero (consList zero (consList zero emptyList)))))

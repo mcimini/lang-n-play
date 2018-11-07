@@ -1,0 +1,10 @@
+let lambda = {! Types T ::= (int) | (arrow T T),  
+			   Expression e ::= zero | (abs @x e) | (app e e), 
+               Value v ::= zero | (abs @x e), 
+               Context C ::= (app C e) | (app v C),
+			   Environment Gamma ::= [x : T],
+			   Relation ::= Gamma |- e : T | e --> e,
+			   StartingCall ::= empty |- e : T | e --> e.
+			   (app (abs @x e) v) --> e[v/x], 
+			   Gamma |- E : T
+			 !} in lambda> (app (abs @x (app x x)) (abs @x (app x x)))

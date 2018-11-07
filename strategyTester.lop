@@ -1,0 +1,40 @@
+import lambdaStrategies
+
+let references = {! Types T ::= int | (refType T),  
+			   Label l ::= initialLabel | (new l), 
+			   Expression e ::= zero | (ref e) | (deref e) | (assign e e) | (l), 
+               Value v ::= initialLabel | (new l) | zero, 
+               Context C ::= (ref C) | (deref C) | (assign C e) | (assign v C),
+               Heap h ::= [(mapStore l e)], 
+               Configuration c ::= (e l h),
+			   Environment gamma ::= [x : T],
+			   Location sigma ::= [(map l T)],
+			   Relation ::= sigma gamma |- c : T | sigma gamma |- e : T | (typeHeap sigma gamma h) | (e l h) --> (e l h),
+			   StartingCall ::= sigma empty |- c : T.
+			   Sigma Gamma |- (conf E L H) : T <== Sigma Gamma |- E : T /\ (typeHeap Sigma Gamma H),
+			   Sigma Gamma |- initialLabel : T <== (map initialLabel T) in Sigma, 
+			   Sigma Gamma |- (new L) : T <== (map (new L) T) in Sigma, 
+			   Sigma Gamma |- (ref E) : (refType T) <== Sigma Gamma |- E : T,
+			   Sigma Gamma |- (deref E) : T <== Sigma Gamma |- E : (refType T),
+			   Sigma Gamma |- (assign E1 E2) : T <== Sigma Gamma |- E1 : (refType T) /\ Sigma Gamma |- E2 : T,
+			   Sigma Gamma |- zero : int,
+			   (typeHeap Sigma Gamma empty), 
+			   (typeHeap   [(map L T) | Sigma]  Gamma Heap) <== (mapStore L E) in Heap /\ [(map L T) | Sigma] Gamma |- E : T,
+			   (ref v) Count Heap --> Count (new Count) [(mapStore Count v) | Heap], 
+			   (deref v) Count Heap --> e Count Heap <== (mapStore v e) in Heap, 
+			   (assign v1 v2) Count Heap --> v2 Count [(mapStore v1 v2) | Heap]
+			 !}  
+			    
+let parallel = {! Types T ::= (string) | (times T T),  
+			   Expression e ::= (par e e) | (pair e e),
+			   Value v ::= (pair v v), 
+               Context C ::= (par C e) | (par e C),
+               Configuration c ::= (e l h)
+			   Sigma Gamma |- (par E1 E2) : (times T1 T2) <== Sigma Gamma |- E1 : T1 /\ Sigma Gamma |- E2 : T2, 
+			   (par v1 v2) Count Heap --> (pair v1 v2) Count Heap
+			 !} in (references U parallel)> 
+						 (par 
+						 	(switch-to ((lambdaStore vv) U cbv)> (app (abs @x (app (abs @y (deref (assign y x))) (ref (ref zero)))) (app (abs @x x) (ref zero))))
+						 	(switch-to ((lambdaStore ee) U cbn)> (app (abs @x (app (abs @y (assign y x)) (ref (ref zero)))) (app (abs @x x) (ref zero))))
+						  ) (initialLabel) empty
+

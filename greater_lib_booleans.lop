@@ -1,0 +1,9 @@
+let greater_lib = {! 
+               Expression e ::= (greater e e) , 
+               Context C ::= (greater C e) | (greater v C), 
+               Environment Gamma ::= [x : T],
+               Relation ::= Gamma |- e : T | e --> e,
+               StartingCall ::= empty |- e : T | e --> e.
+               Gamma |- (greater e1 e2) : (mybool) <== Gamma |- e1 : (int) /\ Gamma |- e2 : (int),
+               (greater (succ E1) E2) --> (succ zero)
+            !} 

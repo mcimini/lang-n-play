@@ -1,0 +1,13 @@
+let if_lib = {! 
+               Type T ::= mybool, 
+			   Expression e ::= (iif e e e) | tt | ff, 
+               Context C ::= (iif C e e), 
+               Environment Gamma ::= [x : T],
+               Relation ::= Gamma |- e : T | e --> e,
+               StartingCall ::= empty |- e : T | e --> e.
+               Gamma |- tt : mybool, 
+               Gamma |- ff : mybool, 
+               Gamma |- (iif e1 e2 e3) : T <== Gamma |- e1 : (bool) /\ Gamma |- e2 : T /\ Gamma |- e3 : T,
+               (iif (tt E) E1 E2) --> E1, 
+               (iif (ff) E1 E2) --> E2 
+            !} 
