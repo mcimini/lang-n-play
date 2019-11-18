@@ -1,0 +1,17 @@
+let lists eh : strategy = {! Types T ::= int | (list T), 
+			   Expression e ::= zero | (emptylist) | (consList e e) | (head e) | (tail e) | myError,
+               Value v ::= zero | (emptyList) | (consList v v), 
+			   Error er ::= myError, 
+               Context C ::= (consList C e) | (head C) | (tail C),
+			   Environment Gamma ::= [x : T],
+			   Relation ::= Gamma |- e : T | e --> e,
+			   StartingCall ::= empty |- e : T | e --> e.
+			   (head (consList V1 eh)) --> V1,
+			   (head emptyList) --> myError, 
+			   Gamma |- x : T <== x : T in Gamma, 
+			   Gamma |- zero : int,
+			   Gamma |- emptyList : (list int),
+			   Gamma |- (consList e1 e2) : (list T) <== Gamma |- e1 : T /\ Gamma |- e2 : (list T),
+			   Gamma |- (head e) : T <== Gamma |- e : (list T),
+			   Gamma |- (tail e) : (list T) <== Gamma |- e : (list T)
+			 !} in (lists vv) U {! Context E ::= (cons v E) !}

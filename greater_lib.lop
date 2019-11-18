@@ -2,9 +2,9 @@ let greater_lib = {!
                Expression e ::= (greater e e) , 
                Context C ::= (greater C e) | (greater v C), 
                Environment Gamma ::= [x : T],
-               Relation ::= Gamma |- e : T | e --> e,
-               StartingCall ::= empty |- e : T | e --> e.
-               Gamma |- (greater e1 e2) : (int) <== Gamma |- e1 : (int) /\ Gamma |- e2 : (int),
+               Configuration c ::= (e l h),
+			   Relation ::= sigma gamma |- c : T | sigma gamma |- e : T | (typeHeap sigma gamma h) | (e l h) --> (e l h),
+			   StartingCall ::= sigma empty |- c : T.
                (greater zero (succ V2)) --> zero,
                (greater (succ V1) zero) --> (succ zero),
                (greater (succ V1) (succ V2)) --> (greater V1 V2)

@@ -1,0 +1,24 @@
+import references_lib 
+import foreach_lib
+
+let lists = {! Type T ::= baseType | (int) | (list T), 
+			   Expression e ::= (zero) | (succ e) | (emptylist) | (consList e e) | (elementAt e e), 
+               Value v ::= (zero) | (succ v) | (emptyList) | (consList v v),
+			   Error er ::= myError, 
+               Context C ::= (consList C e) | (consList v C) | (elementAt C e) | (elementAt v C), 
+               Configuration c ::= (e l h),
+			   Environment Gamma ::= [x : T],
+			   Relation ::= Gamma |- e : T | e --> e,
+			   StartingCall ::= empty |- e : T | e --> e.
+			   Gamma |- x : T <== x : T in Gamma, 
+			   Gamma |- zero : int, 
+			   Gamma |- (succ e) : T <== Gamma |- e : int,
+			   Gamma |- emptyList : (list T),
+			   Gamma |- (consList e1 e2) : (list T) <== Gamma |- e1 : T /\ Gamma |- e2 : (list T),
+			   Gamma |- (head e) : T <== Gamma |- e : (list T),
+			   Gamma |- (tail e) : (list T) <== Gamma |- e : (list T),
+			   Gamma |- (elementAt e1 e2) : T <== Gamma |- e1 : (int) /\ Gamma |- e2 : (list T),
+			   (elementAt (zero) emptyList) --> myError, 
+			   (elementAt (zero) (consList V1 V2)) --> V1, 
+			   (elementAt (succ V) (consList V1 V2)) --> (elementAt V V2)
+			 !} in (references_lib U lists U foreach_lib)> (foreach (consList (zero) (consList (zero) (consList (zero) emptyList))) (succ zero)) (initialLabel) empty

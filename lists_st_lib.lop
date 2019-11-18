@@ -1,0 +1,21 @@
+let lists_lib = {! Type T ::= baseType | (int) | (list T), 
+			   Expression e ::= (zero) | (succ e) | (emptylist) | (consList e e) | (elementAt e e), 
+               Value v ::= (zero) | (succ v) | (emptyList) | (consList v v) | myError, 
+			   Error er ::= myError, 
+               Context C ::= (consList C e) | (consList v C) | (elementAt C e) | (elementAt v C) | (succ C), 
+               Configuration c ::= (e l h),
+			   Environment Gamma ::= [x : T],
+			   Relation ::= sigma gamma |- c : T | sigma gamma |- e : T | (typeHeap sigma gamma h) | (e l h) --> (e l h),
+			   StartingCall ::= sigma empty |- c : T.
+			   Sigma Gamma |- (conf E L H) : T, 
+			   Gamma |- x : T <== x : T in Gamma, 
+			   Gamma |- zero : int, 
+			   Gamma |- (succ e) : T <== Gamma |- e : int,
+			   Gamma |- emptyList : (list T),
+			   Gamma |- (consList e1 e2) : (list T) <== Gamma |- e1 : T /\ Gamma |- e2 : (list T),
+			   Gamma |- (elementAt e1 e2) : T <== Gamma |- e1 : (int) /\ Gamma |- e2 : (list T),
+			   (elementAt (zero) emptyList) Count Heap --> myError Count Heap, 
+			   (elementAt (zero) (consList V1 V2)) Count Heap --> V1 Count Heap, 
+			   (elementAt (succ V) (consList V1 V2)) Count Heap --> (elementAt V V2) Count Heap
+			 !} 
+			 

@@ -1,0 +1,11 @@
+let foreach_lib = {! 
+			   Expression e ::= (foreach e e), 
+			   Type T ::= (ok), 
+               Context C ::= (foreach C e) , 
+               Environment Gamma ::= [x : T],
+               Relation ::= Gamma |- e : T | e --> e,
+               StartingCall ::= empty |- e : T | e --> e.
+               Gamma |- (foreach E1 E2) : T,
+			   (foreach (consList V1 V2) E) --> (consList E (foreach V2 E)),
+			   (foreach emptyList E) --> emptyList 
+            !} 

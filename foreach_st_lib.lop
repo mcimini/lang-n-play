@@ -1,0 +1,11 @@
+let foreach_lib = {! 
+			   Expression e ::= (foreach e e), 
+               Context C ::= (foreach C e) , 
+               Configuration c ::= (e l h),
+			   Environment Gamma ::= [x : T],
+			   Relation ::= sigma gamma |- c : T | sigma gamma |- e : T | (typeHeap sigma gamma h) | (e l h) --> (e l h),
+			   StartingCall ::= sigma empty |- c : T.
+			   (foreach (consList V1 V2) E) Count Heap --> (consList E (foreach V2 E)) Count Heap,
+			   (foreach emptyList E) Count Heap --> emptyList Count Heap
+            !} 
+

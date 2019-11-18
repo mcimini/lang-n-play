@@ -1,0 +1,13 @@
+let greater_lib = {! 
+               Expression e ::= (greater e e) , 
+               Context C ::= (greater C e) | (greater v C), 
+               Environment Gamma ::= [x : T],
+               Configuration c ::= (e l h),
+			   Relation ::= sigma gamma |- c : T | sigma gamma |- e : T | (typeHeap sigma gamma h) | (e l h) --> (e l h),
+			   StartingCall ::= sigma empty |- c : T.
+               (greater zero (succ V2)) Count Heap --> zero Count Heap,
+               (greater (succ V1) zero) Count Heap --> (succ zero) Count Heap,
+               (greater (succ V1) (succ V2)) Count Heap --> (greater V1 V2) Count Heap,
+			   (greater E1 E2) Count1 Heap1 --> (greater E12 E2) Count2 Heap2 <== E1 Count1 Heap1 --> E12 Count2 Heap2,
+			   (greater V E1) Count1 Heap1 --> (greater V E2) Count2 Heap2 <== E1 Count1 Heap1 --> E2 Count2 Heap2
+            !} 

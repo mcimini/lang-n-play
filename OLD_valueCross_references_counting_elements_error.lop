@@ -1,0 +1,62 @@
+let lists = {! Type T ::= baseType | (int) | (list T), 
+			   Expression e ::= (zero) | (succ e) | (emptylist) | (consList e e) | (elementAt e e), 
+               Value v ::= (zero) | (succ v) | (emptyList) | (consList v v) | myError,
+			   Error er ::= myError, 
+               Context C ::= (consList C e) | (consList v C) | (elementAt C e) | (elementAt v C) | (greater C e) | (greater v C) | (succ C) | (iff C e e), 
+               Configuration c ::= (e l h),
+			   Environment Gamma ::= [x : T],
+			   Relation ::= sigma gamma |- c : T | sigma gamma |- e : T | (typeHeap sigma gamma h) | (e l h) --> (e l h),
+			   StartingCall ::= sigma empty |- c : T.
+			   Sigma Gamma |- (conf E L H) : T, 
+			   Gamma |- x : T <== x : T in Gamma, 
+			   Gamma |- zero : int, 
+			   Gamma |- (succ e) : T <== Gamma |- e : int,
+			   Gamma |- emptyList : (list T),
+			   Gamma |- (consList e1 e2) : (list T) <== Gamma |- e1 : T /\ Gamma |- e2 : (list T),
+			   Gamma |- (head e) : T <== Gamma |- e : (list T),
+			   Gamma |- (tail e) : (list T) <== Gamma |- e : (list T),
+			   Gamma |- (elementAt e1 e2) : T <== Gamma |- e1 : (int) /\ Gamma |- e2 : (list T),
+			   (elementAt (zero) emptyList) Count Heap --> myError Count Heap, 
+			   (elementAt (zero) (consList V1 V2)) Count Heap --> V1 Count Heap, 
+			   (elementAt (succ V) (consList V1 V2)) Count Heap --> (elementAt V V2) Count Heap,
+			   (iff (succ V) E1 E2) Count Heap --> E1 Count Heap,
+			   (iff zero  E1 E2) Count Heap --> E2 Count Heap,
+               (greater zero (succ V2)) Count Heap --> zero Count Heap,
+               (greater (succ V1) zero) Count Heap --> (succ zero) Count Heap,
+               (greater (succ V1) (succ V2)) Count Heap --> (greater V1 V2) Count Heap
+			 !} 
+			 
+let references = {! Types T ::= int | (refType T),  
+			   Label l ::= initialLabel | (new l), 
+			   Expression e ::= zero | (ref e) | (deref e) | (assign e e) | (l), 
+               Value v ::= initialLabel | (new l) | zero | (emptyList) | (consList v v) | (succ v) | myError,
+               Context C ::= (ref C) | (deref C) | (assign C e) | (assign v C) | (consList C e) | (consList v C) | (foreach C e) | (seq C e) | (succ C),
+               Heap h ::= [(mapStore l e)], 
+               Configuration c ::= (e l h),
+			   Environment gamma ::= [x : T],
+			   Location sigma ::= [(map l T)],
+			   Relation ::= sigma gamma |- c : T | sigma gamma |- e : T | (typeHeap sigma gamma h) | (e l h) --> (e l h),
+			   StartingCall ::= sigma empty |- c : T.
+			   Sigma Gamma |- (conf E L H) : T, 
+			   Sigma Gamma |- initialLabel : T <== (map initialLabel T) in Sigma, 
+			   Sigma Gamma |- (new L) : T <== (map (new L) T) in Sigma, 
+			   Sigma Gamma |- (ref E) : (refType T) <== Sigma Gamma |- E : T,
+			   Sigma Gamma |- (deref E) : T <== Sigma Gamma |- E : (refType T),
+			   Sigma Gamma |- (assign E1 E2) : T <== Sigma Gamma |- E1 : (refType T) /\ Sigma Gamma |- E2 : T,
+			   Sigma Gamma |- zero : int,
+			   (typeHeap Sigma Gamma empty), 
+			   (typeHeap   [(map L T) | Sigma]  Gamma Heap) <== (mapStore L E) in Heap /\ [(map L T) | Sigma] Gamma |- E : T,
+			   (foreach (consList V1 V2) E) Count Heap --> (consList E (foreach V2 E)) Count Heap,
+			   (foreach emptyList E) Count Heap --> emptyList Count Heap, 
+			   (ref v) Count Heap --> Count (new Count) [(mapStore Count v) | Heap], 
+			   (deref v) Count Heap --> e Count Heap <== (mapStore v e) in Heap, 
+			   (assign v1 v2) Count Heap --> v2 Count [(mapStore v1 v2) | Heap],
+			   (seq v e) Count Heap --> e Count Heap
+			 !}  in lists> (iff (greater (succ (succ (succ (succ (succ zero))))) 
+			                             (switch-to references> (seq (seq (assign initialLabel zero) (foreach (consList (zero) (consList (succ zero) (consList (succ (succ zero)) emptyList))) (assign initialLabel (succ (deref initialLabel))))) (deref initialLabel)))
+							     ) 
+							myError 
+							(elementAt   (succ (succ (succ (succ (succ zero)))))    (consList (zero) (consList (succ zero) (consList (succ (succ zero)) emptyList)))   )
+							)
+						    (new initialLabel) empty
+

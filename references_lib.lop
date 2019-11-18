@@ -1,0 +1,26 @@
+
+let references_lib = {! Types T ::= int | (refType T),  
+			   Label l ::= initialLabel | (new l), 
+			   Expression e ::= zero | (ref e) | (deref e) | (assign e e) | (l), 
+               Value v ::= initialLabel | (new l) | zero | (emptyList) | (consList v v) | (succ v) | myError,
+               Context C ::= (ref C) | (deref C) | (assign C e) | (assign v C) | (consList C e) | (consList v C) | (foreach C e) | (seq C e) | (succ C),
+               Heap h ::= [(mapStore l e)], 
+               Configuration c ::= (e l h),
+			   Environment gamma ::= [x : T],
+			   Location sigma ::= [(map l T)],
+			   Relation ::= sigma gamma |- c : T | sigma gamma |- e : T | (typeHeap sigma gamma h) | (e l h) --> (e l h),
+			   StartingCall ::= sigma empty |- c : T.
+			   Sigma Gamma |- (conf E L H) : T, 
+			   Sigma Gamma |- initialLabel : T <== (map initialLabel T) in Sigma, 
+			   Sigma Gamma |- (new L) : T <== (map (new L) T) in Sigma, 
+			   Sigma Gamma |- (ref E) : (refType T) <== Sigma Gamma |- E : T,
+			   Sigma Gamma |- (deref E) : T <== Sigma Gamma |- E : (refType T),
+			   Sigma Gamma |- (assign E1 E2) : T <== Sigma Gamma |- E1 : (refType T) /\ Sigma Gamma |- E2 : T,
+			   Sigma Gamma |- zero : int,
+			   (typeHeap Sigma Gamma empty), 
+			   (typeHeap   [(map L T) | Sigma]  Gamma Heap) <== (mapStore L E) in Heap /\ [(map L T) | Sigma] Gamma |- E : T,
+			   (ref v) Count Heap --> Count (new Count) [(mapStore Count v) | Heap], 
+			   (deref v) Count Heap --> e Count Heap <== (mapStore v e) in Heap, 
+			   (assign v1 v2) Count Heap --> v2 Count [(mapStore v1 v2) | Heap],
+			   (seq v e) Count Heap --> e Count Heap
+			 !} 

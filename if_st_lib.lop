@@ -1,0 +1,11 @@
+let iff_lib = {! 
+			   Expression e ::= (iif e e e), 
+               Context C ::= (iif C e e), 
+               Environment Gamma ::= [x : T],
+               Configuration c ::= (e l h),
+			   Relation ::= sigma gamma |- c : T | sigma gamma |- e : T | (typeHeap sigma gamma h) | (e l h) --> (e l h),
+			   StartingCall ::= sigma empty |- c : T.
+			   (iff (succ V) E1 E2) Count Heap --> E1 Count Heap,
+			   (iff zero  E1 E2) Count Heap --> E2 Count Heap,
+			   (iff E1 E2 E3) Count1 Heap1 --> (iff E12 E2 E3) Count2 Heap2 <== E1 Count1 Heap1 --> E12 Count2 Heap2
+            !} 

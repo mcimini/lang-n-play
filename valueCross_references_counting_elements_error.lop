@@ -1,0 +1,14 @@
+import references_lib
+import lists_st_lib
+import if_st_lib
+import greater_st_lib
+import foreach_st_lib
+
+(lists_lib U iff_lib U greater_lib)> (iff (greater (succ (succ (succ (succ (succ zero))))) 
+			                             (switch-to (references_lib U foreach_lib)> (seq (seq (assign initialLabel zero) (foreach (consList (zero) (consList (succ zero) (consList (succ (succ zero)) emptyList))) (assign initialLabel (succ (deref initialLabel))))) (deref initialLabel)))
+							     ) 
+							myError 
+							(elementAt   (succ (succ (succ (succ (succ zero)))))     (consList (zero) (consList (succ zero) (consList (succ (succ zero)) emptyList)))   )
+							)
+						    (new initialLabel) empty
+
