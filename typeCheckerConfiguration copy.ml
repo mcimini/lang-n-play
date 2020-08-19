@@ -23,12 +23,15 @@ let startingTyping_fromSwitch term termToPut = match term with
 
 let typing_rule_for_multiple_args_in_conf syntax conf = match conf with Constructor("conf", args) -> 
 	let configurationDeclaration = try Some (snd (List.assoc "Configuration" syntax)) with Not_found -> None in 
-	if List.length args < 2 && is_none configurationDeclaration then ["typeOf GammaLO Gamma (switchInherit (exec E Conf)) T :- typeOfLO GammaLO E (tlanguage Rules), (Rules => (typeOf GammaLO Gamma Conf T)).
+	let argsPrePost = if !prepost then "Cpre Cpost " else "" in 
+	if List.length args < 2 && is_none configurationDeclaration then ["typeOf GammaLO Gamma (switchInherit (exec E " ^ argsPrePost ^ "Conf)) T :- typeOfLO GammaLO E (tlanguage Rules), (Rules => (typeOf GammaLO Gamma Conf T)).
 "] else 
 	let startingCallDeclaration = try Some (snd (List.assoc "StartingCall" syntax)) with Not_found -> None in 
 	if is_none startingCallDeclaration 
 		then raise (TypeError ("Configuration does not contain information on how to type check ")) 
-		else let term11 = Constructor(switchInherit,  [Constructor(execlo, [Var "E" ; Var "Conf"])]) in 
+		else 
+			let argsPrePost = if !prepost then [Var "Cpre" ; Var "Cpost"] else [] in 
+			let term11 = Constructor(switchInherit,  [Constructor(execlo, [Var "E"] @ argsPrePost @ [Var "Conf"])]) in 
 		[ generateFormula (startingTyping_fromSwitch (List.hd (get startingCallDeclaration)) term11)
 		    ^ ":- typeOfLO GammaLO E (tlanguage Rules), (Rules => (" ^   
 			 generateFormula (startingTyping_fromSwitch (List.hd (get startingCallDeclaration)) (Var "Conf")) ^ "))."
@@ -84,7 +87,7 @@ let get_result resultVariable time = function
 
 
 let type_checking_configuration gammaLO syntax rules conf = 
-	let conf = mute_switchInherit conf in (* mute_switchInherit also strips off Pre and Post formulae, as they are not needed to type check  *)
+	let conf = mute_switchInherit conf in 
 (*	let asd = print_endline ("dopoSwitchSwitchato: " ^ (generateTerm conf)) in
 	let asd = List.map (fun rule -> print_string (show_rule rule)) rules in 
 	let asd = print_string ":ENDRULES" in 
@@ -113,79 +116,3 @@ let type_checking_configuration gammaLO syntax rules conf =
 	 	   else type_error "Configuration does not type check"
 		
 	
-	
-		   (*
-			   
-		let initialDecl = (List.filter (fun decl -> match decl with | (Constructor("typecheck", initialArgs)) -> true | _ -> false) (get configurationDeclaration)) in 
-		let Constructor(name, initialArgs) = if initialDecl = [] then raise (TypeError ("Configuration does not contain information on how to type check ")) else List.hd initialDecl in 
-		let term11 = Constructor(switchInherit,  [Constructor(execlo, [Var "E" ; Var "Conf"])]) in 
-		[ generateFormula (Formula(typing, [Var "GammaLO"] @ List.map (term_substitute term11 "C") initialArgs)) ^ ":- typeOfLO GammaLO E (tlanguage Rules), (Rules => (" ^   
-			   generateFormula (Formula(typing, [Var "GammaLO"] @ List.map (term_substitute (Var "Conf") "C") initialArgs)) ^ "))."
-		]
-			   
-			   
-		   let typing_rule_for_multiple_args_in_conf syntax (Constructor("conf", args)) = 
-		   	let configurationDeclaration = try Some (snd (List.assoc "Configuration" syntax)) with Not_found -> None in 
-		   	if args = [] && is_none configurationDeclaration then ["typeOf GammaLO Gamma (switchInherit (exec E (conf Conf))) T :- typeOfLO GammaLO E (tlanguage Rules), (Rules => (typeOf GammaLO Gamma Conf T)).
-		   "] else 
-		   		let initialDecl = (List.filter (fun decl -> match decl with | (Constructor("typecheck", initialArgs)) -> true | _ -> false) (get configurationDeclaration)) in 
-		   		let Constructor(name, initialArgs) = if initialDecl = [] then raise (TypeError ("Configuration does not contain information on how to type check ")) else List.hd initialDecl in 
-		   		let argsInConf = List.mapi (toGenericVarByIndex "H") (List.tl args) in  (* tail args, because the first argument is E *)
-		   		let term11 = Constructor(switchInherit,  [Constructor(execlo, [Var "E" ; Var "Conf"])]) in 
-		   		let term21 = Constructor(configuration,  Constructor(switchInherit, [Var "E"]) :: argsInConf) in 
-		   		let term22 = Constructor(switchInherit, [foldbyApplications (Var "E" :: argsInConf)]) in 
-		   		[ generateFormula (Formula(typing, [Var "GammaLO"] @ List.map (term_substitute term11 "C") initialArgs)) ^ ":- typeOfLO GammaLO E (tlanguage Rules), (Rules => (" ^   
-		   			   generateFormula (Formula(typing, [Var "GammaLO"] @ List.map (term_substitute (Var "Conf") "C") initialArgs)) ^ "))."
-		   			; 
-		   		  generateRule (Rule(
-		   			  [Formula(typing, [Var "GammaLO"] @ List.map (term_substitute term22 "C") initialArgs)], 
-		   			   Formula(typing, [Var "GammaLO"] @ List.map (term_substitute term21 "C") initialArgs)
-		   		  		)) 
-		   		]
-		   *)
-	
-
-(*		
-				| _ -> type_error "The type returned from a nested call was not understandable" (* Format.eprintf "Type: \n%s\n" (get !result); return (get !result); *)
-
-
-let queryToTyping syntax conf = 
-	let typeSystemSignature = try Some (snd (List.assoc "Type System" syntax)) with Not_found -> None in 
-	let (Constructor(pred, args)) as tsTerm = from_signature_to_term typing typeSystemSignature in 
-	let tsFormula = Formula(pred, Var "GammaLO" :: args) in 
-	
-	
-
-
-let _ = result := None in 
-		let cwd = Unix.getcwd () in
-		  let tjpath =
-		    let v = try Sys.getenv "TJPATH" with Not_found -> "" in
-		    let tjpath = Str.split (Str.regexp ":") v in
-		    List.flatten (List.map (fun x -> ["-I";x]) tjpath) in
-		  let installpath = [ "-I"; "" ] in
-		  let execpath = ["-I"; Filename.dirname (Sys.executable_name)] in
-		  let opts = Array.to_list Sys.argv @ tjpath @ installpath @ execpath in
-		  let pheader, argv = Elpi_API.Setup.init ~silent:true ~builtins:Elpi_builtin.std_builtins opts ~basedir:cwd in
-		  let newRules = addGammaOfLOMLtoRules gamma rules in 
-		 let prog = Elpi_API.Parse.program [(String.concat "\n" (List.map generateRule newRules))] in 
-		let query = Elpi_API.Parse.goal (generateFormula (queryToTyping conf) ^ ".") in 
-	    let prog = Elpi_API.Compile.program pheader [prog] in
-	    let query = Elpi_API.Compile.query prog query in
-		let vars =
-		    ref Elpi_API.Compile.(default_flags.defined_variables) in
-	    let flags = {
-	      Elpi_API.Compile.default_flags
-	        with Elpi_API.Compile.defined_variables = !vars } in
-	    if not (Elpi_API.Compile.static_check pheader ~flags query) then
-	       Format.eprintf "Type error\n";
-		let exec = Elpi_API.Compile.link ~flags query in
-			Elpi_API.Execute.loop ~delay_outside_fragment:false exec ~more ~pp:get_result;
-	   		if is_some !result 
-						then let returnType = Format.fprintf str_formatter "inType(%s)" (get !result) in flush_str_formatter; return returnType
-						else return "";;
-*)			
-						
-						(* type_error ("here typToSubst: " ^ show_typ typ1 ^ "here var: " ^ var ^ "here typToChange: " ^ show_typ typ2 ^ "and union = " ^ show_typ (
-						
-						else type_error ("In let, the expression is not of the type specified.: " ^ (show_typ typ) ^ "--" ^ (show_typ (type_checker delta ((var, typ) :: gamma) e1)) ^ "--" ^ (show_typ (type_checker delta ((var, typ) :: gamma) e2)) ^ "--" ^ string_of_bool (equality typ (type_checker delta ((var, typ) :: gamma) e1))) *)

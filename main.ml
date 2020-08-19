@@ -9,6 +9,7 @@ open Compiler
 open TypeChecker 
 open Evaluator 
 
+
 let main () =
 	let cwd = Unix.getcwd () in
 	  let tjpath =
@@ -19,10 +20,13 @@ let main () =
 	  let execpath = ["-I"; Filename.dirname (Sys.executable_name)] in
 	  let opts = Array.to_list Sys.argv @ tjpath @ installpath @ execpath in
 	  let pheader, argv = Elpi_API.Setup.init ~silent:true ~builtins:Elpi_builtin.std_builtins opts ~basedir:cwd in
- 	  let _ = elpi_init := Some pheader; lomlImplementation := Some (Elpi_API.Parse.program [language_implementation])
- in 
+(* 	  let _ = elpi_init := Some pheader; lomlImplementation := Some (Elpi_API.Parse.program [language_implementation]) in 
+postponed after parsing
+*)  
  if Sys.argv.(1) = "--untyped" then let exp = read_file (Sys.argv.(2)) in evaluate (compile_ exp) else
  let exp = read_file (Sys.argv.(1)) in 
+ let loml_to_use = if !prepost then language_implementationWithPrePost else language_implementation in 
+ let _ = elpi_init := Some pheader; lomlImplementation := Some (Elpi_API.Parse.program [loml_to_use]) in  
  (* let asd = print_string ("AFTERPARSING:" ^ show_exp exp ^ ":ENDAFTERPARSING\n")  in *)
     (*  let (typ, newexp) = type_checker true [] [] exp in 
 	 print_string (generateTerm (compile newexp)); 

@@ -104,6 +104,16 @@ let rec type_checker flag (delta : query_environment) (gamma : type_environment)
 								| 2	-> (InType(type_checking_configuration gamma syntax rules conf), VarLO("")) (* the second element of the pair is just a dummy when flag is false *)
 							| _ -> type_error ("In exec, in language position: the expression is not a language")
 						end
+	| ExecPrePost(e, pre, post, conf) -> let (t, e') = type_checker flag delta gamma e in begin match t with 
+							| TLanguage(syntax, rules, varAndConstraints) -> 
+								match flag with 
+								| 0 -> let number = let configDecl = syntax_getConfiguration syntax in if is_none configDecl then 0 else List.length (term_getArguments (get configDecl)) in 
+											( InType(Var ""), ExecPrePost(e',  pre, post, insertInheritTag number gamma conf))
+								| 1 -> let number = let configDecl = syntax_getConfiguration syntax in if is_none configDecl then 0 else List.length (term_getArguments (get configDecl)) in 
+											( InType(Var ""), ExecPrePost(e',  pre, post, expand_languages number gamma conf))
+								| 2	-> (InType(type_checking_configuration gamma syntax rules conf), VarLO("")) (* the second element of the pair is just a dummy when flag is false *)
+							| _ -> type_error ("In exec, in language position: the expression is not a language")
+						end
 	| VV -> (TStrategyVV, VV)
 	| EE -> (TStrategyEE, EE)
 	| AbsLAN(var, e) -> if List.mem_assoc var delta then type_error ("In language fragment abstraction, language fragment variable is already used.") 
@@ -168,6 +178,15 @@ and expand_languages number gamma conf =
 								(Switch(InheritState(number), Language([], rules), expand_languages number gamma term))
 							| _ -> type_error ("In nested exec, in language position: the expression is not a language")
 							end
+	| SwitchPrePost(n, e, pre, post, term) -> let (t, e') = type_checker 1 [] gamma e in (* flag is 1 because you need to insert explicit languages *)
+							begin match t with 
+							| TLanguage(syntax, rules, varAndConstraints) -> 
+							(*	let _ = print_string ("I have tranformed : " ^ generateTerm (Switch(n, e, term)) ^ "into : " ^ generateTerm (Switch(n, Language([], rules), type_checker_configuration gamma term))); in *) 
+							(*	Notice that the flag is set to NewState, so that the pass for calling Elpi for type checking is done with generateTerm that detects that 
+							    it does not have to print abstractions to pass the configuration state around, which serves only at run-time, for type-checking you'd use generateTerm at some point but it must skip the abstractions *) 
+								(SwitchPrePost(InheritState(number), Language([], rules), pre, post, expand_languages number gamma term))
+							| _ -> type_error ("In nested exec, in language position: the expression is not a language")
+							end
 and insertInheritTag number gamma conf = 						
 match conf with 
 	| Var(name) -> Var(name)
@@ -176,6 +195,8 @@ match conf with
 	| Abs(bindTag, term) -> Abs(bindTag, expand_languages number gamma term)
 	| Switch(n, e, term) -> let (t, e') = type_checker 0 [] gamma e in (* flag is 0 because you need to insert inherit tags *)
 							Switch(InheritState(number), e', insertInheritTag number gamma term)  
+	| SwitchPrePost(n, e, pre, post, term) -> let (t, e') = type_checker 0 [] gamma e in (* flag is 0 because you need to insert inherit tags *)
+							SwitchPrePost(InheritState(number), e', pre, post, insertInheritTag number gamma term)  
 
 
 

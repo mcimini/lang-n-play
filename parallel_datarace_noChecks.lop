@@ -1,0 +1,44 @@
+let references = {! Types T ::= int | (refType T),  
+			   Expression e ::= zero | (succ e) | (ref e) | (deref e) | (assign e e), 
+               Value v ::= zero | (succ v), 
+               Context C ::= (ref C) | (deref C) | (assign C e) | (assign v C) | (seq C e),
+               Heap h ::= [(mapStore l e)], 
+               Configuration c ::= (e l h),
+			   Environment gamma ::= [x : T],
+			   Relation ::= gamma |- c : T | gamma |- e : T | (e l h) --> (e l h),
+			   StartingCall ::= empty |- c : T.
+			   Gamma |- (conf E L H) : T <==  Gamma |- E : T,
+			   Gamma |- (ref E) : (refType T) <== Gamma |- E : T,
+			   Gamma |- (deref E) : T <== Gamma |- E : (refType T),
+			   Gamma |- (assign E1 E2) : T <== Gamma |- E1 : (refType T) /\ Gamma |- E2 : T,
+			   Gamma |- (seq E1 E2) : T2 <== Gamma |- E1 : T1 /\ Gamma |- E2 : T2,
+			   Gamma |- zero : int,
+			   (ref v) Count Heap --> Count (succ Count) [(mapStore Count v) | Heap], 
+			   (deref v) Count Heap --> e Count Heap <== (mapStore v e) in Heap, 
+			   (assign v1 v2) Count Heap --> v2 Count [(mapStore v1 v2) | Heap],
+			   (seq v e) Count Heap --> e Count Heap,
+			   (trueCheck X)
+			 !}  
+
+let untyped = {! Configuration conf ::= (e l h)  
+                 Gamma |- (conf E Cpre Cpost L H) : T, 
+                 Gamma |- (conf E L H) : T, 
+                 Gamma |- E : T,
+				 (trueCheck X)
+!}   
+			    
+let parallel = {! Types T ::= unitType,  
+			   Expression e ::= (par e e),
+			   Value v ::= (par v v), 
+               Context C ::= (par C e) | (par e C),
+               Configuration c ::= (e l h)
+			   Gamma |- (par E1 E2) : unitType <== Gamma |- E1 : T1 /\ Gamma |- E2 : T2
+			 !} in (references U parallel) trueCheck trueCheck> 
+			    (seq (assign (ref zero) (assign (ref zero) zero)) (par 
+							(switch-to (untyped) trueCheck trueCheck> (assign zero zero))
+							(switch-to (untyped) trueCheck trueCheck> (assign zero (succ zero)))
+						  )) zero empty
+			 
+
+
+

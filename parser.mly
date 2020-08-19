@@ -125,6 +125,8 @@ expr:
 	{ Union(e1, e2) }
   | e = expr EXEC terms = list(term)
     { Exec(e, Constructor(configuration, terms)) }
+    | e = expr pre = VARLEX post = VARLEX EXEC terms = list(term)
+      { let _ = prepost := true in ExecPrePost(e, pre, post, Constructor(configuration, terms)) }
   | IF e1 = expr THEN e2 = expr ELSE e3 = expr
     { If (e1, e2, e3) }
   | REMOVE LPAREN r = rule RPAREN FROM e = expr
@@ -161,6 +163,8 @@ term :
     { Application(term1,term2) } 
   | LPAREN SWITCH n = option(INT) e = expr EXEC t = term RPAREN
     { Switch(InheritState (option_to_number n), e, t) }
+| LPAREN SWITCH n = option(INT) e = expr pre = VARLEX post = VARLEX EXEC t = term RPAREN
+  { let _ = prepost := true in SwitchPrePost(InheritState (option_to_number n), e, pre, post, t) }	
   | term1 = term COLON term2 = term   
     { Constructor(colon, [term1 ; term2]) }	
     | NIL  

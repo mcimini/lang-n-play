@@ -28,6 +28,7 @@ let rec apply_abstractions_term abstractions_map term = match term with
 	| Application(term1, term2) -> Application(apply_abstractions_term abstractions_map term1, apply_abstractions_term abstractions_map term2)
 	| Abs(bindTag, term) -> Abs(bindTag, apply_abstractions_term abstractions_map term)
     | Switch(flag, e, term) -> Switch(flag, e, apply_abstractions_term abstractions_map term)
+    | SwitchPrePost(flag, e, pre, post, term) -> SwitchPrePost(flag, e, pre, post, apply_abstractions_term abstractions_map term)
     | _ ->  raise(Failure("pattern_match failed in apply_abstractions_term: " ^ show_term term))
 
 	
@@ -68,6 +69,15 @@ let rec generateTerm term = match term with
 											| CopyState n -> embedWithTreatmentForCopyOrInherit switchCopy n 
  											| InheritState n -> embedWithTreatmentForCopyOrInherit switchInherit n 
 											end
+        | SwitchPrePost(flag, e, pre, post, term) ->  let embedWithTreatmentForCopyOrInherit switchOperator n = 
+						     		let argsInConf = List.mapi (toGenericVarByIndex "H") (repeat n n) in 
+						     		 let expToTermToEmbed = compile (ExecPrePost(e, pre, post, (wrap_in_configuration argsInConf term))) in 
+							   	  		generateTerm (Constructor(switchOperator, [wrapbyAbstractions expToTermToEmbed argsInConf])) in 
+				 						begin match flag with  (* notice, if the state is New it just prints the term without abstractions.. we make it happen also for the type checking pass *)
+					 						| NewState -> generateTerm (Constructor(switchInherit, [compile (ExecPrePost(e, pre, post, term))])) 
+										| CopyState n -> embedWithTreatmentForCopyOrInherit switchCopy n 
+											| InheritState n -> embedWithTreatmentForCopyOrInherit switchInherit n 
+										end
 		  | _ ->  raise(Failure("User program cannot be generated" ^ show_term term))
 and generateAbstraction (var :: body :: rest) = "(" ^ generateTerm var ^ "\\ " ^ generateTerm body  ^ ")"
 and compile exp = match exp with 
@@ -78,6 +88,7 @@ and compile exp = match exp with
     | Language(syntax, rules) -> Constructor(languagelo, (compile_rules rules)) 
     | Union(e1, e2)  -> Constructor(unionlo, [(compile e1) ; (compile e2)]) 
     | Exec(e, conf) ->  Constructor(execlo, [compile e ; conf])  (* (Union(e, steps_inside_configurations conf))  *)
+    | ExecPrePost(e, pre, post, conf) ->  Constructor(execlo, [compile e ; Var("(x\\" ^ pre ^ " x)") ; Var("(x\\" ^ post ^ " x)") ; conf])  (* (Union(e, steps_inside_configurations conf))  *)
     | VV -> Constructor(strategy, [Var("(x\\ value x)")]) 
     | EE -> Constructor(strategy, [Var("(x\\ true)")]) 
 	| AbsLAN(var, e) -> compile e
@@ -147,6 +158,7 @@ let rec compile_values_and_ctxs vars exp = match exp with
     | Language(syntax, rules) -> Language(syntax, List.map (compile_values_and_ctxs_by_rules vars) rules @ List.map (compile_values_and_ctxs_by_rules vars) (compile_values_and_ctxs_by_syntax syntax))
     | Union(e1, e2)  -> Union(compile_values_and_ctxs vars e1, compile_values_and_ctxs vars e2)
     | Exec(e, conf) ->  Exec(compile_values_and_ctxs vars e, conf)
+    | ExecPrePost(e, pre, post, conf) ->  ExecPrePost(compile_values_and_ctxs vars e, pre, post, conf)
     | VV -> VV
     | EE -> EE
 	| AbsLAN(var, e) ->  AbsLAN(var, compile_values_and_ctxs (Var(var) :: vars) e)

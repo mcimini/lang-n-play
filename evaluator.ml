@@ -10,6 +10,7 @@ open Compiler
 let queryToValue program = [toNStepLO program (Var "Result") ; toValueLO (Var "Result")]  (* you should add ; toValueLO (Var "Result") to premises *)
 let queryToError program = [toNStepLO program (Var "Result")  ; toErrorLO (Var "Result")] (* you should add ; toValueLO (Var "Result") to premises *)
 let queryToStuck program = [toStuck program (Var "Result")] (* you should add ; toValueLO (Var "Result") to premises *)
+let queryToException program = [toNStepLO program (Var "Result") ; toException (Var "Result")] (* you should add ; toValueLO (Var "Result") to premises *)
 
 let more () = false
 ;;
@@ -51,13 +52,21 @@ let evaluate program =
    	 			if is_some !result 
 					then Format.eprintf "Error produced: \n%s\n" (get !result)  (* (generateTerm (get !result)) *)
 					else begin 	
-			   		let query = Elpi_API.Parse.goal (generatePremises [] (queryToStuck program) ^ ".") in 
+			   		let query = Elpi_API.Parse.goal (generatePremises [] (queryToException program) ^ ".") in 
 			   	    let query = Elpi_API.Compile.query prog query in
 					let exec = Elpi_API.Compile.link ~flags query in
 					Elpi_API.Execute.loop ~delay_outside_fragment:false exec ~more ~pp:get_result;
 						if is_some !result 
-						   then Format.eprintf "Evaluation did not produce a value nor an error, got stuck at the program: \n%s\n" (get !result)
-					       else begin Format.eprintf "Evaluation did not produce a value nor an error\n" end
+						   then Format.eprintf "Evaluation produced an exception: \n%s\n" (get !result)
+					       else begin
+		   			   		let query = Elpi_API.Parse.goal (generatePremises [] (queryToStuck program) ^ ".") in 
+		   			   	    let query = Elpi_API.Compile.query prog query in
+		   					let exec = Elpi_API.Compile.link ~flags query in
+		   					Elpi_API.Execute.loop ~delay_outside_fragment:false exec ~more ~pp:get_result;
+		   						if is_some !result 
+		   						   then Format.eprintf "Evaluation did not produce a value nor an error, got stuck at the program: \n%s\n" (get !result)
+		   					       else begin Format.eprintf "Evaluation did not produce a value nor an error\n" end
+							end
 					end		
      			 end
 	;;

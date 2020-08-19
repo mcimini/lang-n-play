@@ -30,9 +30,11 @@ let extensionFiles = ".lop"
 let typecheckerLO = "typeOfLO"
 
 let language_implementation = "lib/loml.elpi"
+let language_implementationWithPrePost = "lib/lomlPreAndPost.elpi"
 
 let elpi_init : (Elpi_API.Setup.program_header option) ref = ref None
 let lomlImplementation : (Elpi_API.Ast.program option) ref = ref None
+let prepost = ref false
 
 type operatorname = string [@@deriving show, eq]
 type varname = string [@@deriving show, eq]
@@ -54,6 +56,7 @@ type term =
   | Application of term  * term  
   | Abs of bindingTag  * term  
   | Switch of flag * exp  * term 
+  | SwitchPrePost of flag * exp * varname * varname * term 
   [@@deriving show, eq]
 and formula =
   | Formula of predicatename * term list 
@@ -70,6 +73,7 @@ and exp =
   | Language of (syntactic_category list) * (rule list)
   | Union of exp  * exp 
   | Exec of exp  * term 
+  | ExecPrePost of exp * varname * varname * term 
   | VV 
   | EE 
   | Int of int  
@@ -110,6 +114,7 @@ and language_constraint =
 
 let toValueLO term = Formula("valueLO", [term])
 let toErrorLO term = Formula("errorLO", [term])
+let toException term = Formula("exceptionLO", [term])
 let toStepLO source target = Formula("stepLO", [source ; target])
 let toNStepLO source target = Formula("nstepLO", [source ; target])
 let toStuck source target = Formula("stuck", [source ; target])
@@ -275,6 +280,8 @@ let rec mute_switchInherit term = match term with
 	| Application(term1, term2) -> Application(mute_switchInherit term1, mute_switchInherit term2)
 	| Abs(bindTag, term) -> Abs(bindTag, mute_switchInherit term)
 	| Switch(n, e, term) -> Switch(NewState, e, mute_switchInherit term)
+	| SwitchPrePost(n, e, pre, post, term) -> Switch(NewState, e, mute_switchInherit term)
+(*	| SwitchPrePost(n, e, pre, post, term) -> SwitchPrePost(NewState, e, pre, post, mute_switchInherit term) *)
 
 
 	(*@ 
